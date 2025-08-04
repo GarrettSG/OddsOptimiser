@@ -205,3 +205,24 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Scraped HTML content
+/webpages/*.txt
+
+# Output data files
+/data/*.json
+
+# --- Azure Functions ---
+.local.settings.json        # holds secrets for local dev (Blob Storage, etc.)
+.publish/                   # temporary directory for publishing
+.azurefunctions/            # function core tools cache
+
+# --- Function Runtime ---
+*.swp
+*.log
+
+# --- Function Tools and Extensions ---
+bin/
+obj/
+
+.vscode/
