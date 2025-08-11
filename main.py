@@ -157,6 +157,7 @@ def scrape_betmgm_blocking(league: str) -> List[OddsRow]:
             page.goto(url, timeout=45_000)
             page.wait_for_selector("ms-six-pack-event", timeout=10_000)
             html = page.content()
+            print(html)
             context.close()
             browser.close()
     except PlaywrightTimeoutError as e:
@@ -174,6 +175,10 @@ def scrape_betmgm_blocking(league: str) -> List[OddsRow]:
         # Team names
         game = row.select_one(".participants-pair-game")
         gameTeams = game.select(".participant-wrapper")
+
+        print(gameTeams[0].select_one(".participant").text.strip())
+        print(gameTeams[1].select_one(".participant").text.strip())
+
         team_dicts[0]["team_name"] = gameTeams[0].select_one(".participant").text.strip()
         team_dicts[1]["team_name"] = gameTeams[1].select_one(".participant").text.strip()
 
