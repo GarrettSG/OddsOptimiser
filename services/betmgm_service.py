@@ -42,26 +42,34 @@ def scrape_betmgm_blocking(league: str) -> List[OddsRow]:
         team_dicts = [{"sportsbook": "BetMGM"}, {"sportsbook": "BetMGM"}]
 
         game = row.select_one(".participants-pair-game")
-        gameTeams = game.select(".participant-wrapper")
-        team_dicts[0]["team_name"] = gameTeams[0].select_one(".participant").text.strip()
-        team_dicts[1]["team_name"] = gameTeams[1].select_one(".participant").text.strip()
+        if game:
+            gameTeams = game.select(".participant-wrapper")
+            if len(gameTeams) >= 2:
+                for i in range(2):
+                    participant = gameTeams[i].select_one(".participant")
+                    team_dicts[i]["team_name"] = participant.text.strip() if participant and participant.text else None
 
-        bets = row.select_one(".grid-six-pack-wrapper").select("ms-option-group")
-        spread = bets[0]
-        moneyline = bets[2]
+        bets_wrapper = row.select_one(".grid-six-pack-wrapper")
+        if bets_wrapper:
+            bets = bets_wrapper.select("ms-option-group")
+            if len(bets) >= 3:  # Ensure spread and moneyline exist
+                spread_opts = bets[0].select("ms-option") if bets[0] else []
+                for i in range(min(2, len(spread_opts))):
+                    spread_el = spread_opts[i].select_one(".option-attribute")
+                    spread_val = spread_el.text.strip() if spread_el and spread_el.text else None
+                    team_dicts[i]["spread"] = parse_float(spread_val)
 
-        spread_opts = spread.select("ms-option")
-        for i in range(2):
-            spread_val = spread_opts[i].select_one(".option-attribute").text.strip()
-            team_dicts[i]["spread"] = parse_float(spread_val)
-            spread_line_val = spread_opts[i].select_one("ms-font-resizer span").text.strip()
-            team_dicts[i]["spread_line"] = parse_int(spread_line_val)
+                    spread_line_el = spread_opts[i].select_one("ms-font-resizer span")
+                    spread_line_val = spread_line_el.text.strip() if spread_line_el and spread_line_el.text else None
+                    team_dicts[i]["spread_line"] = parse_int(spread_line_val)
 
-        moneyline_opts = moneyline.select("ms-option")
-        for i in range(2):
-            ml_val = moneyline_opts[i].select_one("ms-font-resizer").text.strip()
-            team_dicts[i]["moneyline"] = parse_int(ml_val)
+                moneyline_opts = bets[2].select("ms-option") if bets[2] else []
+                for i in range(min(2, len(moneyline_opts))):
+                    ml_el = moneyline_opts[i].select_one("ms-font-resizer")
+                    ml_val = ml_el.text.strip() if ml_el and ml_el.text else None
+                    team_dicts[i]["moneyline"] = parse_int(ml_val)
 
+        # Append safe results
         for t in team_dicts:
             data.append(OddsRow(**t))
 

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from controllers import scrape_controller
+from .controllers import scrape_controller
 
 app = FastAPI(title="Sportsbook Scraper API")
 

@@ -41,7 +41,7 @@ def scrape_draftkings_blocking(league: str) -> List[OddsRow]:
             context = browser.new_context()
             page = context.new_page()
             page.goto(url, timeout=45_000)
-            page.wait_for_timeout(5000)
+            page.wait_for_timeout(3500)
             html = page.content()
             context.close()
             browser.close()
@@ -61,17 +61,21 @@ def scrape_draftkings_blocking(league: str) -> List[OddsRow]:
             if len(columns) < 4:
                 continue
 
+            # Team name
             team_name_el = columns[0].select_one(".event-cell__name-text")
             team_name = team_name_el.text.strip() if team_name_el else None
 
+            # Spread
             spread_el = columns[1].select_one(".sportsbook-outcome-cell__line")
-            spread = parse_float(spread_el.text if spread_el else None)
+            spread = parse_float(spread_el.text.strip() if spread_el and spread_el.text else None)
 
+            # Spread line
             spread_line_el = columns[1].select_one(".sportsbook-outcome-cell__element span")
-            spread_line = parse_int(spread_line_el.text if spread_line_el else None)
+            spread_line = parse_int(spread_line_el.text.strip() if spread_line_el and spread_line_el.text else None)
 
+            # Moneyline
             money_line_el = columns[3].select_one(".sportsbook-outcome-cell__element span")
-            moneyline = parse_int(money_line_el.text if money_line_el else None)
+            moneyline = parse_int(money_line_el.text.strip() if money_line_el and money_line_el.text else None)
 
             data.append(
                 OddsRow(
